@@ -111,12 +111,16 @@ def save_matching_results(results: List[Dict], output_file: str):
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     
     with open(output_file, 'w', newline='', encoding='utf-8') as csvfile:
-        fieldnames = ['film_photo', 'scene_photo', 'confidence_score']
+        fieldnames = ['film_photo', 'scene_photo', 'confidence_score', 'confident_match']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         
         writer.writeheader()
         for result in results:
-            writer.writerow(result)
+            # Handle None values for scene_photo
+            result_copy = result.copy()
+            if result_copy['scene_photo'] is None:
+                result_copy['scene_photo'] = ''
+            writer.writerow(result_copy)
 
 
 def get_file_name_from_path(file_path: str) -> str:

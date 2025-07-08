@@ -18,7 +18,7 @@ class PhotoMatcher:
     Handles ORB-based photo matching between film and scene photos
     """
     
-    def __init__(self, max_features: int = 500, good_match_percent: float = 0.15):
+    def __init__(self, max_features: int = 800, good_match_percent: float = 0.15):
         """
         Initialize the photo matcher
         
@@ -178,15 +178,23 @@ class PhotoMatcher:
             print(f"Processing film photo: {film_filename}")
             
             best_match, confidence = self.match_single_photo(film_photo_path, scene_photos)
+            confident_match = 1 if confidence >= 0.7 else 0
             
-            if best_match and confidence > 0.1:  # Minimum confidence threshold
+            if best_match and confidence > 0.6:  # Minimum confidence threshold
                 results.append({
                     'film_photo': film_filename,
                     'scene_photo': best_match,
-                    'confidence_score': round(confidence, 3)
+                    'confidence_score': round(confidence, 3),
+                    'confident_match': confident_match
                 })
                 print(f"  Matched with {best_match} (confidence: {confidence:.3f})")
             else:
+                results.append({
+                    'film_photo': film_filename,
+                    'scene_photo': None,
+                    'confidence_score': 0.0,
+                    'confident_match': -1
+                })
                 print(f"  No good match found (best confidence: {confidence:.3f})")
         
         return results 

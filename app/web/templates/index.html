@@ -93,7 +93,7 @@
                                         <div class="accordion-body">
                                             <div class="mb-3">
                                                 <label for="maxFeatures" class="form-label">Max Features</label>
-                                                <input type="number" class="form-control" id="maxFeatures" value="500" min="100" max="2000">
+                                                <input type="number" class="form-control" id="maxFeatures" value="800" min="100" max="2000">
                                                 <div class="form-text">Maximum number of features to detect (100-2000)</div>
                                             </div>
                                             <div class="mb-3">
@@ -248,6 +248,9 @@
                 return;
             }
             
+            // Clear previous verification results
+            clearVerificationResults();
+            
             // Show loading
             showLoading(true);
             
@@ -308,6 +311,7 @@
                                 <th>Film Photo</th>
                                 <th>Scene Photo</th>
                                 <th>Confidence</th>
+                                <th>Status</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -315,11 +319,23 @@
             
             results.forEach(result => {
                 const confidenceClass = getConfidenceClass(result.confidence_score);
+                let statusBadge;
+                
+                if (result.confident_match === 1) {
+                    statusBadge = '<span class="badge bg-success">Confident</span>';
+                } else if (result.confident_match === -1) {
+                    statusBadge = '<span class="badge bg-secondary">Deferred</span>';
+                } else {
+                    statusBadge = '<span class="badge bg-warning">Low Confidence</span>';
+                }
+                
+                const scenePhoto = result.scene_photo || 'No match';
                 html += `
                     <tr>
                         <td><code>${result.film_photo}</code></td>
-                        <td><code>${result.scene_photo}</code></td>
+                        <td><code>${scenePhoto}</code></td>
                         <td><span class="${confidenceClass}">${(result.confidence_score * 100).toFixed(1)}%</span></td>
+                        <td>${statusBadge}</td>
                     </tr>
                 `;
             });
@@ -336,7 +352,7 @@
         // Get confidence class for styling
         function getConfidenceClass(score) {
             if (score >= 0.7) return 'confidence-high';
-            if (score >= 0.4) return 'confidence-medium';
+            if (score >= 0.5) return 'confidence-medium';
             return 'confidence-low';
         }
 
@@ -471,6 +487,12 @@
             verificationContent.style.display = 'block';
         }
         
+        // Clear verification results
+        function clearVerificationResults() {
+            const verificationContent = document.getElementById('verificationContent');
+            verificationContent.style.display = 'none';
+        }
+
         // Show download section
         function showDownloadSection() {
             document.getElementById('downloadSection').style.display = 'block';
