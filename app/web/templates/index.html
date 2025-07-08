@@ -101,6 +101,11 @@
                                                 <input type="number" class="form-control" id="goodMatchPercent" value="0.15" step="0.01" min="0.05" max="0.5">
                                                 <div class="form-text">Threshold for good matches (0.05-0.5)</div>
                                             </div>
+                                            <div class="mb-3">
+                                                <label for="ratioThreshold" class="form-label">Ratio Test Threshold</label>
+                                                <input type="number" class="form-control" id="ratioThreshold" value="0.75" step="0.01" min="0.1" max="1.0">
+                                                <div class="form-text">Ratio test threshold (0.1-1.0, lower is stricter)</div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -222,6 +227,7 @@
             const sceneFolder = document.getElementById('sceneFolder').value;
             const maxFeatures = parseInt(document.getElementById('maxFeatures').value);
             const goodMatchPercent = parseFloat(document.getElementById('goodMatchPercent').value);
+            const ratioThreshold = parseFloat(document.getElementById('ratioThreshold').value);
             
             if (!filmFolder || !sceneFolder) {
                 showError('Please select both film and scene folders');
@@ -241,7 +247,8 @@
                         film_folder: filmFolder,
                         scene_folder: sceneFolder,
                         max_features: maxFeatures,
-                        good_match_percent: goodMatchPercent
+                        good_match_percent: goodMatchPercent,
+                        ratio_threshold: ratioThreshold
                     })
                 });
                 
