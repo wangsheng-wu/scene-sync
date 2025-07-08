@@ -48,7 +48,6 @@ def create_app():
             scene_folder = data.get('scene_folder')
             max_features = data.get('max_features', 500)
             good_match_percent = data.get('good_match_percent', 0.15)
-            ratio_threshold = data.get('ratio_threshold', 0.75)
             
             if not film_folder or not scene_folder:
                 return jsonify({
@@ -75,8 +74,7 @@ def create_app():
             # Initialize matcher
             matcher = PhotoMatcher(
                 max_features=max_features,
-                good_match_percent=good_match_percent,
-                ratio_threshold=ratio_threshold
+                good_match_percent=good_match_percent
             )
             
             # Perform matching

@@ -22,8 +22,7 @@ def cli():
 @click.option('--output', default='output/results.csv', help='Output CSV file path')
 @click.option('--max-features', default=500, help='Maximum number of features to detect')
 @click.option('--good-match-percent', default=0.15, help='Good match percentage threshold')
-@click.option('--ratio-threshold', default=0.75, help='Ratio test threshold (0.0-1.0, lower is stricter)')
-def match(film_folder, scene_folder, output, max_features, good_match_percent, ratio_threshold):
+def match(film_folder, scene_folder, output, max_features, good_match_percent):
     """Match photos between film and scene folders"""
     
     # Validate input folders
@@ -41,15 +40,13 @@ def match(film_folder, scene_folder, output, max_features, good_match_percent, r
     click.echo(f"Output file: {output}")
     click.echo(f"Max features: {max_features}")
     click.echo(f"Good match percent: {good_match_percent}")
-    click.echo(f"Ratio threshold: {ratio_threshold}")
     click.echo("-" * 50)
     
     try:
         # Initialize matcher
         matcher = PhotoMatcher(
             max_features=max_features,
-            good_match_percent=good_match_percent,
-            ratio_threshold=ratio_threshold
+            good_match_percent=good_match_percent
         )
         
         # Perform matching
