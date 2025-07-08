@@ -60,3 +60,8 @@ Pipfile.lock
 
 # PEP 582
 __pypackages__/ 
+
+# Scene info
+scene-info/
+film-photos/
+output/
