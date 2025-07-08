@@ -6,6 +6,7 @@
     <title>Scene Sync - Photo Matching</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .hero-section {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -37,6 +38,14 @@
         .confidence-high { color: #28a745; }
         .confidence-medium { color: #ffc107; }
         .confidence-low { color: #dc3545; }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 1rem;
+        }
+        .visualization-section {
+            margin-top: 2rem;
+        }
     </style>
 </head>
 <body>
@@ -101,6 +110,13 @@
                                                 <input type="number" class="form-control" id="goodMatchPercent" value="0.15" step="0.01" min="0.05" max="0.5">
                                                 <div class="form-text">Threshold for good matches (0.05-0.5)</div>
                                             </div>
+                                            <div class="mb-3">
+                                                <label for="referenceTable" class="form-label">Reference Table (Optional)</label>
+                                                <select class="form-select" id="referenceTable">
+                                                    <option value="">No reference table</option>
+                                                </select>
+                                                <div class="form-text">Select a previous result file to build upon existing confident matches</div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -156,6 +172,36 @@
                             </div>
                         </div>
                         
+                        <!-- Visualizations Section -->
+                        <div id="visualizationsSection" class="visualization-section" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6 class="mb-0"><i class="fas fa-chart-pie"></i> Match Status Distribution</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="chart-container">
+                                                <canvas id="matchStatusChart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6 class="mb-0"><i class="fas fa-chart-bar"></i> Confidence Score Distribution</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="chart-container">
+                                                <canvas id="confidenceChart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <!-- Verification Results -->
                         <div id="verificationContent" style="display: none;">
                             <div class="card mt-3">
@@ -164,6 +210,20 @@
                                 </div>
                                 <div class="card-body">
                                     <div id="verificationMetrics"></div>
+                                    <div id="verificationCharts" class="mt-3">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="chart-container">
+                                                    <canvas id="metricsChart"></canvas>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="chart-container">
+                                                    <canvas id="detailedMetricsChart"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -180,11 +240,13 @@
         let currentResults = null;
         let currentOutputFile = null;
         let currentTruthFiles = [];
+        let charts = {};
 
         // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
             loadFolders();
             loadTruthFiles();
+            loadReferenceTables();
             setupEventListeners();
         });
 
@@ -242,14 +304,16 @@
             const sceneFolder = document.getElementById('sceneFolder').value;
             const maxFeatures = parseInt(document.getElementById('maxFeatures').value);
             const goodMatchPercent = parseFloat(document.getElementById('goodMatchPercent').value);
+            const referenceTable = document.getElementById('referenceTable').value;
             
             if (!filmFolder || !sceneFolder) {
                 showError('Please select both film and scene folders');
                 return;
             }
             
-            // Clear previous verification results
+            // Clear previous verification results and charts
             clearVerificationResults();
+            clearCharts();
             
             // Show loading
             showLoading(true);
@@ -264,7 +328,8 @@
                         film_folder: filmFolder,
                         scene_folder: sceneFolder,
                         max_features: maxFeatures,
-                        good_match_percent: goodMatchPercent
+                        good_match_percent: goodMatchPercent,
+                        reference_table: referenceTable
                     })
                 });
                 
@@ -273,7 +338,15 @@
                 if (data.success) {
                     currentResults = data.results;
                     currentOutputFile = data.output_file.split('/').pop();
-                    displayResults(data.results, data.total_matches);
+                    
+                    // Show reference table info if used
+                    let resultMessage = `Found ${data.total_matches} matches`;
+                    if (data.existing_matches > 0) {
+                        resultMessage += ` (${data.existing_matches} from reference, ${data.new_matches} new)`;
+                    }
+                    
+                    displayResults(data.results, data.total_matches, resultMessage);
+                    createVisualizations(data.results);
                     showDownloadSection();
                 } else {
                     showError('Matching failed: ' + data.error);
@@ -286,7 +359,7 @@
         }
 
         // Display results
-        function displayResults(results, totalMatches) {
+        function displayResults(results, totalMatches, resultMessage = null) {
             const resultsContent = document.getElementById('resultsContent');
             
             if (results.length === 0) {
@@ -299,9 +372,10 @@
                 return;
             }
             
+            const message = resultMessage || `Found ${totalMatches} matches`;
             let html = `
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6>Found ${totalMatches} matches</h6>
+                    <h6>${message}</h6>
                     <span class="badge bg-primary">${results.length} results</span>
                 </div>
                 <div class="table-responsive results-table">
@@ -326,7 +400,7 @@
                 } else if (result.confident_match === -1) {
                     statusBadge = '<span class="badge bg-secondary">Deferred</span>';
                 } else {
-                    statusBadge = '<span class="badge bg-warning">Low Confidence</span>';
+                    statusBadge = '<span class="badge bg-warning">Maybe</span>';
                 }
                 
                 const scenePhoto = result.scene_photo || 'No match';
@@ -347,6 +421,145 @@
             `;
             
             resultsContent.innerHTML = html;
+        }
+
+        // Create visualizations
+        function createVisualizations(results) {
+            if (results.length === 0) return;
+            
+            // Show visualizations section
+            document.getElementById('visualizationsSection').style.display = 'block';
+            
+            // Create match status chart
+            createMatchStatusChart(results);
+            
+            // Create confidence distribution chart
+            createConfidenceChart(results);
+        }
+
+        // Create match status pie chart
+        function createMatchStatusChart(results) {
+            const ctx = document.getElementById('matchStatusChart').getContext('2d');
+            
+            // Count match statuses
+            const statusCounts = {
+                confident: 0,
+                lowConfidence: 0,
+                deferred: 0
+            };
+            
+            results.forEach(result => {
+                if (result.confident_match === 1) {
+                    statusCounts.confident++;
+                } else if (result.confident_match === -1) {
+                    statusCounts.deferred++;
+                } else {
+                    statusCounts.lowConfidence++;
+                }
+            });
+            
+            // Destroy existing chart if it exists
+            if (charts.matchStatus) {
+                charts.matchStatus.destroy();
+            }
+            
+            charts.matchStatus = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Confident', 'Low Confidence', 'Deferred'],
+                    datasets: [{
+                        data: [statusCounts.confident, statusCounts.lowConfidence, statusCounts.deferred],
+                        backgroundColor: ['#28a745', '#ffc107', '#6c757d'],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Create confidence distribution histogram
+        function createConfidenceChart(results) {
+            const ctx = document.getElementById('confidenceChart').getContext('2d');
+            
+            // Create confidence bins
+            const bins = [0, 0.2, 0.4, 0.6, 0.7, 0.8, 0.9, 1.0];
+            const binCounts = [0, 0, 0, 0, 0, 0, 0, 0];
+            
+            results.forEach(result => {
+                const confidence = result.confidence_score;
+                for (let i = 0; i < bins.length - 1; i++) {
+                    if (confidence >= bins[i] && confidence < bins[i + 1]) {
+                        binCounts[i]++;
+                        break;
+                    }
+                }
+            });
+            
+            // Destroy existing chart if it exists
+            if (charts.confidence) {
+                charts.confidence.destroy();
+            }
+            
+            charts.confidence = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['0-20%', '20-40%', '40-60%', '60-70%', '70-80%', '80-90%', '90-100%'],
+                    datasets: [{
+                        label: 'Number of Matches',
+                        data: binCounts,
+                        backgroundColor: [
+                            '#6c757d', // Gray for low confidence (0-20%)
+                            '#6c757d', // Gray for low confidence (20-40%)
+                            '#6c757d', // Gray for low confidence (40-60%)
+                            '#ffc107', // Yellow for medium confidence (60-70%)
+                            '#28a745', // Green for high confidence (70-80%)
+                            '#28a745', // Green for high confidence (80-90%)
+                            '#28a745'  // Green for high confidence (90-100%)
+                        ],
+                        borderColor: [
+                            '#495057', '#495057', '#495057', '#e0a800', '#1e7e34', '#1e7e34', '#1e7e34'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Clear all charts
+        function clearCharts() {
+            Object.values(charts).forEach(chart => {
+                if (chart) {
+                    chart.destroy();
+                }
+            });
+            charts = {};
+            document.getElementById('visualizationsSection').style.display = 'none';
         }
 
         // Get confidence class for styling
@@ -394,8 +607,33 @@
             }
         }
         
+        // Load reference tables
+        async function loadReferenceTables() {
+            try {
+                const response = await fetch('/api/reference-tables');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const select = document.getElementById('referenceTable');
+                    select.innerHTML = '<option value="">No reference table</option>';
+                    
+                    data.reference_tables.forEach(table => {
+                        const option = document.createElement('option');
+                        option.value = table;
+                        option.textContent = table;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading reference tables:', error);
+            }
+        }
+        
         // Show verification modal
         function showVerificationModal() {
+            console.log('Verification modal triggered');
+            console.log('Current truth files:', currentTruthFiles);
+            
             if (currentTruthFiles.length === 0) {
                 alert('No truth files found. Please add CSV files to the truth/ directory.');
                 return;
@@ -415,6 +653,7 @@
             // Set up confirm button
             document.getElementById('confirmVerifyBtn').onclick = function() {
                 const selectedFile = select.value;
+                console.log('Selected truth file:', selectedFile);
                 verifyModal.hide();
                 verifyResults(selectedFile);
             };
@@ -422,6 +661,7 @@
         
         // Verify results
         async function verifyResults(truthFile) {
+            console.log('Starting verification with:', { results_file: currentOutputFile, truth_file: truthFile });
             try {
                 const response = await fetch('/api/verify', {
                     method: 'POST',
@@ -435,6 +675,7 @@
                 });
                 
                 const data = await response.json();
+                console.log('Verification response:', data);
                 
                 if (data.success) {
                     displayVerificationResults(data.metrics, data.detailed_results);
@@ -442,6 +683,7 @@
                     alert('Verification failed: ' + data.error);
                 }
             } catch (error) {
+                console.error('Verification error:', error);
                 alert('Verification failed: ' + error.message);
             }
         }
@@ -485,6 +727,107 @@
             
             verificationMetrics.innerHTML = html;
             verificationContent.style.display = 'block';
+            
+            // Create verification charts
+            createVerificationCharts(metrics);
+        }
+
+        // Create verification charts
+        function createVerificationCharts(metrics) {
+            // Metrics chart (accuracy, precision, recall, F1)
+            const metricsCtx = document.getElementById('metricsChart').getContext('2d');
+            
+            if (charts.metrics) {
+                charts.metrics.destroy();
+            }
+            
+            charts.metrics = new Chart(metricsCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Accuracy', 'Precision', 'Recall', 'F1 Score'],
+                    datasets: [{
+                        label: 'Score',
+                        data: [
+                            metrics.accuracy * 100,
+                            metrics.precision * 100,
+                            metrics.recall * 100,
+                            metrics.f1_score * 100
+                        ],
+                        backgroundColor: [
+                            'rgba(40, 167, 69, 0.8)',
+                            'rgba(102, 126, 234, 0.8)',
+                            'rgba(255, 193, 7, 0.8)',
+                            'rgba(220, 53, 69, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(40, 167, 69, 1)',
+                            'rgba(102, 126, 234, 1)',
+                            'rgba(255, 193, 7, 1)',
+                            'rgba(220, 53, 69, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            // Detailed metrics chart (correct, incorrect, missed, extra)
+            const detailedCtx = document.getElementById('detailedMetricsChart').getContext('2d');
+            
+            if (charts.detailedMetrics) {
+                charts.detailedMetrics.destroy();
+            }
+            
+            charts.detailedMetrics = new Chart(detailedCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Correct', 'Incorrect', 'Missed', 'Extra'],
+                    datasets: [{
+                        data: [
+                            metrics.correct_matches,
+                            metrics.incorrect_matches,
+                            metrics.missed_matches,
+                            metrics.extra_matches
+                        ],
+                        backgroundColor: [
+                            '#28a745',
+                            '#dc3545',
+                            '#ffc107',
+                            '#17a2b8'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
         }
         
         // Clear verification results
