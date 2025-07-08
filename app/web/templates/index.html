@@ -141,6 +141,9 @@
                             <button class="btn btn-sm btn-outline-primary" id="downloadBtn">
                                 <i class="fas fa-download"></i> Download CSV
                             </button>
+                            <button class="btn btn-sm btn-outline-success ms-2" id="verifyBtn">
+                                <i class="fas fa-check-circle"></i> Verify Results
+                            </button>
                         </div>
                     </div>
                     <div class="card-body">
@@ -157,6 +160,18 @@
                                 <p>Select folders and click "Start Matching" to begin</p>
                             </div>
                         </div>
+                        
+                        <!-- Verification Results -->
+                        <div id="verificationContent" style="display: none;">
+                            <div class="card mt-3">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="fas fa-chart-bar"></i> Verification Results</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="verificationMetrics"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -169,10 +184,12 @@
         // Global variables
         let currentResults = null;
         let currentOutputFile = null;
+        let currentTruthFiles = [];
 
         // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
             loadFolders();
+            loadTruthFiles();
             setupEventListeners();
         });
 
@@ -217,6 +234,9 @@
             
             // Download button
             document.getElementById('downloadBtn').addEventListener('click', downloadResults);
+            
+            // Verify button
+            document.getElementById('verifyBtn').addEventListener('click', showVerificationModal);
         }
 
         // Handle form submission
@@ -351,6 +371,113 @@
             `;
         }
 
+        // Load truth files
+        async function loadTruthFiles() {
+            try {
+                const response = await fetch('/api/truth-files');
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentTruthFiles = data.truth_files;
+                }
+            } catch (error) {
+                console.error('Error loading truth files:', error);
+            }
+        }
+        
+        // Show verification modal
+        function showVerificationModal() {
+            if (currentTruthFiles.length === 0) {
+                alert('No truth files found. Please add CSV files to the truth/ directory.');
+                return;
+            }
+            // Populate dropdown
+            const select = document.getElementById('truthFileSelect');
+            select.innerHTML = '';
+            currentTruthFiles.forEach(file => {
+                const option = document.createElement('option');
+                option.value = file;
+                option.textContent = file;
+                select.appendChild(option);
+            });
+            // Show modal
+            const verifyModal = new bootstrap.Modal(document.getElementById('verifyModal'));
+            verifyModal.show();
+            // Set up confirm button
+            document.getElementById('confirmVerifyBtn').onclick = function() {
+                const selectedFile = select.value;
+                verifyModal.hide();
+                verifyResults(selectedFile);
+            };
+        }
+        
+        // Verify results
+        async function verifyResults(truthFile) {
+            try {
+                const response = await fetch('/api/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        results_file: currentOutputFile,
+                        truth_file: truthFile
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayVerificationResults(data.metrics, data.detailed_results);
+                } else {
+                    alert('Verification failed: ' + data.error);
+                }
+            } catch (error) {
+                alert('Verification failed: ' + error.message);
+            }
+        }
+        
+        // Display verification results
+        function displayVerificationResults(metrics, detailedResults) {
+            const verificationContent = document.getElementById('verificationContent');
+            const verificationMetrics = document.getElementById('verificationMetrics');
+            
+            let html = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Summary</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Total Results:</strong> ${metrics.total_results}</li>
+                            <li><strong>Total Truth:</strong> ${metrics.total_truth}</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Metrics</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Accuracy:</strong> ${(metrics.accuracy * 100).toFixed(1)}%</li>
+                            <li><strong>Precision:</strong> ${(metrics.precision * 100).toFixed(1)}%</li>
+                            <li><strong>Recall:</strong> ${(metrics.recall * 100).toFixed(1)}%</li>
+                            <li><strong>F1 Score:</strong> ${metrics.f1_score.toFixed(3)}</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6>Matching Details</h6>
+                        <ul class="list-unstyled">
+                            <li class="text-success"><strong>Correct:</strong> ${metrics.correct_matches}</li>
+                            <li class="text-danger"><strong>Incorrect:</strong> ${metrics.incorrect_matches}</li>
+                            <li class="text-warning"><strong>Missed:</strong> ${metrics.missed_matches}</li>
+                            <li class="text-info"><strong>Extra:</strong> ${metrics.extra_matches}</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+            
+            verificationMetrics.innerHTML = html;
+            verificationContent.style.display = 'block';
+        }
+        
         // Show download section
         function showDownloadSection() {
             document.getElementById('downloadSection').style.display = 'block';
@@ -423,5 +550,26 @@
             folderInfo.innerHTML = infoHtml || '<p class="text-muted">Select folders to see information</p>';
         }
     </script>
+    <!-- Verification Modal -->
+    <div class="modal fade" id="verifyModal" tabindex="-1" aria-labelledby="verifyModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="verifyModalLabel"><i class="fas fa-check-circle"></i> Verify Results</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="truthFileSelect" class="form-label">Select a truth file:</label>
+              <select class="form-select" id="truthFileSelect"></select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-success" id="confirmVerifyBtn">Verify</button>
+          </div>
+        </div>
+      </div>
+    </div>
 </body>
 </html> 

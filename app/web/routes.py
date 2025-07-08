@@ -8,6 +8,7 @@ import tempfile
 from pathlib import Path
 from ..core.matcher import PhotoMatcher
 from ..core.utils import get_available_folders, save_matching_results
+from ..core.verifier import MatchVerifier
 
 
 def create_app():
@@ -121,6 +122,89 @@ def create_app():
             return jsonify({
                 'success': False,
                 'error': f'Download failed: {str(e)}'
+            }), 500
+    
+    @app.route('/api/verify', methods=['POST'])
+    def verify_results():
+        """Verify matching results against ground truth"""
+        try:
+            data = request.get_json()
+            results_file = data.get('results_file')
+            truth_file = data.get('truth_file')
+            
+            if not results_file or not truth_file:
+                return jsonify({
+                    'success': False,
+                    'error': 'Both results_file and truth_file are required'
+                }), 400
+            
+            # Construct full paths
+            results_path = os.path.join('output', results_file)
+            truth_path = os.path.join('truth', truth_file)
+            
+            if not os.path.exists(results_path):
+                return jsonify({
+                    'success': False,
+                    'error': f'Results file does not exist: {results_path}'
+                }), 400
+            
+            if not os.path.exists(truth_path):
+                return jsonify({
+                    'success': False,
+                    'error': f'Truth file does not exist: {truth_path}'
+                }), 400
+            
+            # Perform verification
+            verifier = MatchVerifier()
+            metrics, detailed_results = verifier.verify_matches(results_path, truth_path)
+            
+            return jsonify({
+                'success': True,
+                'metrics': {
+                    'total_results': metrics.total_results,
+                    'total_truth': metrics.total_truth,
+                    'correct_matches': metrics.correct_matches,
+                    'incorrect_matches': metrics.incorrect_matches,
+                    'missed_matches': metrics.missed_matches,
+                    'extra_matches': metrics.extra_matches,
+                    'accuracy': round(metrics.accuracy, 3),
+                    'precision': round(metrics.precision, 3),
+                    'recall': round(metrics.recall, 3),
+                    'f1_score': round(metrics.f1_score, 3)
+                },
+                'detailed_results': detailed_results
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+    
+    @app.route('/api/truth-files')
+    def get_truth_files():
+        """Get available truth files"""
+        try:
+            truth_dir = 'truth'
+            if not os.path.exists(truth_dir):
+                return jsonify({
+                    'success': True,
+                    'truth_files': []
+                })
+            
+            truth_files = []
+            for file in os.listdir(truth_dir):
+                if file.endswith('.csv'):
+                    truth_files.append(file)
+            
+            return jsonify({
+                'success': True,
+                'truth_files': sorted(truth_files)
+            })
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': str(e)
             }), 500
     
     @app.route('/api/validate-folder', methods=['POST'])

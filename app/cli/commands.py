@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 from ..core.matcher import PhotoMatcher
 from ..core.utils import get_available_folders, save_matching_results
+from ..core.verifier import MatchVerifier
 
 
 @click.group()
@@ -122,6 +123,21 @@ def setup_directories(film_base, scene_base):
     
     click.echo("\nDirectory structure created successfully!")
     click.echo("You can now add your photos to the film-photos and scene-info directories.")
+
+
+@cli.command()
+@click.option('--results', required=True, help='Path to the matching results CSV file')
+@click.option('--truth', required=True, help='Path to the ground truth CSV file')
+def verify(results, truth):
+    """Verify matching results against ground truth and compute metrics"""
+    
+    try:
+        verifier = MatchVerifier()
+        metrics, detailed_results = verifier.verify_matches(results, truth)
+        verifier.print_verification_report(metrics, detailed_results)
+        
+    except Exception as e:
+        click.echo(f"Error during verification: {e}")
 
 
 @cli.command()
