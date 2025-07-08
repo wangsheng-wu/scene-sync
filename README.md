@@ -72,7 +72,7 @@ python main.py match --film-folder film-photos/folder1 --scene-folder scene-info
 # Start the web server
 python main.py web
 
-# Then open http://localhost:5000 in your browser
+# Then open http://localhost:5001 in your browser
 ```
 
 ## Input Requirements
