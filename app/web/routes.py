@@ -102,16 +102,23 @@ def create_app():
         try:
             file_path = os.path.join('output', filename)
             if os.path.exists(file_path):
-                return send_file(file_path, as_attachment=True)
+                # Use absolute path and specify mimetype
+                abs_path = os.path.abspath(file_path)
+                return send_file(
+                    abs_path, 
+                    as_attachment=True,
+                    download_name=filename,
+                    mimetype='text/csv'
+                )
             else:
                 return jsonify({
                     'success': False,
-                    'error': 'File not found'
+                    'error': f'File not found: {file_path}'
                 }), 404
         except Exception as e:
             return jsonify({
                 'success': False,
-                'error': str(e)
+                'error': f'Download failed: {str(e)}'
             }), 500
     
     @app.route('/api/validate-folder', methods=['POST'])
