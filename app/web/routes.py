@@ -2,7 +2,7 @@
 Flask routes for the web interface
 """
 
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify, send_file, make_response
 import os
 import tempfile
 import csv
@@ -10,6 +10,9 @@ from pathlib import Path
 from ..core.matcher import PhotoMatcher
 from ..core.utils import get_available_folders, save_matching_results
 from ..core.verifier import MatchVerifier
+import io
+import cv2
+import numpy as np
 
 
 def create_app():
@@ -376,5 +379,194 @@ def create_app():
                 'success': False,
                 'error': str(e)
             }), 500
+    
+    @app.route('/api/images/<folder_type>/<folder_name>')
+    def get_folder_images(folder_type, folder_name):
+        """Get all images from a specific folder"""
+        try:
+            if folder_type not in ['film', 'scene']:
+                return jsonify({
+                    'success': False,
+                    'error': 'folder_type must be either "film" or "scene"'
+                }), 400
+            
+            # Construct folder path
+            if folder_type == 'film':
+                folder_path = os.path.join('film-photos', folder_name)
+            else:
+                folder_path = os.path.join('scene-info', folder_name)
+            
+            if not os.path.exists(folder_path):
+                return jsonify({
+                    'success': False,
+                    'error': f'Folder does not exist: {folder_path}'
+                }), 400
+            
+            from ..core.utils import get_image_files
+            
+            image_files = get_image_files(folder_path)
+            image_names = [os.path.basename(f) for f in image_files]
+            
+            return jsonify({
+                'success': True,
+                'folder_path': folder_path,
+                'total_images': len(image_names),
+                'image_files': image_names
+            })
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+    
+    @app.route('/api/inspect-images', methods=['POST'])
+    def inspect_images():
+        """Inspect a specific pair of images and return detailed matching information"""
+        try:
+            data = request.get_json()
+            film_folder = data.get('film_folder')
+            scene_folder = data.get('scene_folder')
+            film_photo = data.get('film_photo')
+            scene_photo = data.get('scene_photo')
+            max_features = data.get('max_features', 800)
+            good_match_percent = data.get('good_match_percent', 0.15)
+            
+            if not all([film_folder, scene_folder, film_photo, scene_photo]):
+                return jsonify({
+                    'success': False,
+                    'error': 'film_folder, scene_folder, film_photo, and scene_photo are required'
+                }), 400
+            
+            # Construct full paths
+            film_path = os.path.join('film-photos', film_folder, film_photo)
+            scene_path = os.path.join('scene-info', scene_folder, scene_photo)
+            
+            if not os.path.exists(film_path):
+                return jsonify({
+                    'success': False,
+                    'error': f'Film photo does not exist: {film_path}'
+                }), 400
+            
+            if not os.path.exists(scene_path):
+                return jsonify({
+                    'success': False,
+                    'error': f'Scene photo does not exist: {scene_path}'
+                }), 400
+            
+            # Initialize matcher with custom parameters
+            matcher = PhotoMatcher(
+                max_features=max_features,
+                good_match_percent=good_match_percent
+            )
+            
+            # Perform detailed inspection
+            inspection_result = matcher.inspect_image_pair(film_path, scene_path)
+            
+            return jsonify(inspection_result)
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+    
+    @app.route('/api/inspect-visual')
+    def inspect_visual():
+        """Visualize matches between two images and return as PNG"""
+        film_folder = request.args.get('film_folder')
+        scene_folder = request.args.get('scene_folder')
+        film_photo = request.args.get('film_photo')
+        scene_photo = request.args.get('scene_photo')
+        max_features = int(request.args.get('max_features', 800))
+        good_match_percent = float(request.args.get('good_match_percent', 0.15))
+
+        # Get absolute paths
+        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+        film_path = os.path.join(project_root, 'film-photos', film_folder, film_photo)
+        scene_path = os.path.join(project_root, 'scene-info', scene_folder, scene_photo)
+
+        # Load images
+        img1_color = cv2.imread(film_path)
+        img2_color = cv2.imread(scene_path)
+        img1_gray = cv2.cvtColor(img1_color, cv2.COLOR_BGR2GRAY)
+        img2_gray = cv2.cvtColor(img2_color, cv2.COLOR_BGR2GRAY)
+
+        # Use ORB (or SIFT if available)
+        try:
+            sift = cv2.SIFT_create(nfeatures=max_features)
+            kp1, des1 = sift.detectAndCompute(img1_gray, None)
+            kp2, des2 = sift.detectAndCompute(img2_gray, None)
+            matcher = cv2.BFMatcher()
+            matches = matcher.knnMatch(des1, des2, k=2)
+            good = [m for m, n in matches if m.distance < 0.5 * n.distance]
+        except Exception:
+            orb = cv2.ORB_create(max_features)
+            kp1, des1 = orb.detectAndCompute(img1_gray, None)
+            kp2, des2 = orb.detectAndCompute(img2_gray, None)
+            matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+            good = matcher.match(des1, des2)
+            good = sorted(good, key=lambda x: x.distance)
+
+        # Stack images vertically with a gap
+        gap = 20
+        width = max(img1_color.shape[1], img2_color.shape[1])
+        height = img1_color.shape[0] + img2_color.shape[0] + gap
+        combined_img = np.zeros((height, width, 3), dtype=np.uint8)
+        combined_img[:img1_color.shape[0], :img1_color.shape[1]] = img1_color
+        combined_img[img1_color.shape[0] + gap:, :img2_color.shape[1]] = img2_color
+
+        # Draw matches
+        for m in good:
+            pt1 = tuple(np.round(kp1[m.queryIdx].pt).astype(int))
+            pt2 = tuple(np.round(kp2[m.trainIdx].pt).astype(int) + np.array([0, img1_color.shape[0] + gap]))
+            color = (0, 255, 255)
+            cv2.line(combined_img, pt1, pt2, color, 2, lineType=cv2.LINE_AA)
+            cv2.circle(combined_img, pt1, 4, color, -1)
+            cv2.circle(combined_img, pt2, 4, color, -1)
+
+        # Encode as PNG
+        _, buf = cv2.imencode('.png', combined_img)
+        return send_file(io.BytesIO(buf.tobytes()), mimetype='image/png')
+    
+    @app.route('/film-photos/<path:filename>')
+    def serve_film_photo(filename):
+        """Serve film photos"""
+        try:
+            # Get the absolute path to the project root
+            project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+            file_path = os.path.join(project_root, 'film-photos', filename)
+            if os.path.exists(file_path):
+                return send_file(file_path, mimetype='image/jpeg')
+            else:
+                return jsonify({
+                    'success': False,
+                    'error': f'Film photo not found: {file_path}'
+                }), 404
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Could not serve film photo: {str(e)}'
+            }), 404
+    
+    @app.route('/scene-info/<path:filename>')
+    def serve_scene_photo(filename):
+        """Serve scene photos"""
+        try:
+            # Get the absolute path to the project root
+            project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+            file_path = os.path.join(project_root, 'scene-info', filename)
+            if os.path.exists(file_path):
+                return send_file(file_path, mimetype='image/jpeg')
+            else:
+                return jsonify({
+                    'success': False,
+                    'error': f'Scene photo not found: {file_path}'
+                }), 404
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Could not serve scene photo: {str(e)}'
+            }), 404
     
     return app 

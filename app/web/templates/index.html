@@ -46,6 +46,34 @@
         .visualization-section {
             margin-top: 2rem;
         }
+        .image-comparison-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            overflow-x: auto;
+            padding: 20px 0;
+        }
+        .image-container {
+            position: relative;
+            display: inline-block;
+        }
+        .connection-area {
+            min-width: 100px;
+            height: 400px;
+            position: relative;
+        }
+        .keypoint {
+            position: absolute;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        .keypoint.film {
+            background-color: #ff0000;
+        }
+        .keypoint.scene {
+            background-color: #00ff00;
+        }
     </style>
 </head>
 <body>
@@ -145,7 +173,7 @@
 
             <!-- Results Panel -->
             <div class="col-lg-8">
-                <div class="card">
+                <div class="card" style="margin-bottom: 1rem;">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0"><i class="fas fa-list"></i> Results</h5>
                         <div id="downloadSection" style="display: none;">
@@ -155,6 +183,13 @@
                             <button class="btn btn-sm btn-outline-success ms-2" id="verifyBtn">
                                 <i class="fas fa-check-circle"></i> Verify Results
                             </button>
+                            <button class="btn btn-sm btn-outline-info ms-2" id="inspectBtn">
+                                <i class="fas fa-search"></i> Inspect Images
+                            </button>
+                        </div>
+                        <div class="form-check form-switch ms-3" id="toggleVisualizationsContainer" style="display: none;">
+                          <input class="form-check-input" type="checkbox" id="toggleVisualizations" checked>
+                          <label class="form-check-label" for="toggleVisualizations" style="font-size: 0.9em;">Matching Overview</label>
                         </div>
                     </div>
                     <div class="card-body">
@@ -205,23 +240,82 @@
                         <!-- Verification Results -->
                         <div id="verificationContent" style="display: none;">
                             <div class="card mt-3">
-                                <div class="card-header">
+                                <div class="card-header d-flex justify-content-between align-items-center">
                                     <h6 class="mb-0"><i class="fas fa-chart-bar"></i> Verification Results</h6>
+                                    <button class="btn btn-link btn-sm float-end" type="button" data-bs-toggle="collapse" data-bs-target="#verificationCollapse" aria-expanded="true" aria-controls="verificationCollapse">
+                                        <span id="verificationCollapseIcon" class="fas fa-chevron-up"></span>
+                                    </button>
+                                </div>
+                                <div id="verificationCollapse" class="collapse show">
+                                    <div class="card-body">
+                                        <div id="verificationMetrics"></div>
+                                        <div id="verificationCharts" class="mt-3">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="chart-container">
+                                                        <canvas id="metricsChart"></canvas>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="chart-container">
+                                                        <canvas id="detailedMetricsChart"></canvas>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Image Inspection Section -->
+                        <div id="inspectionSection" class="mt-4" style="display: none;">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="fas fa-search"></i> Image Inspection</h6>
                                 </div>
                                 <div class="card-body">
-                                    <div id="verificationMetrics"></div>
-                                    <div id="verificationCharts" class="mt-3">
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <div class="chart-container">
-                                                    <canvas id="metricsChart"></canvas>
-                                                </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="inspectFilmPhoto" class="form-label">Film Photo</label>
+                                                <select class="form-select" id="inspectFilmPhoto" required>
+                                                    <option value="">Select a film photo...</option>
+                                                </select>
                                             </div>
-                                            <div class="col-md-6">
-                                                <div class="chart-container">
-                                                    <canvas id="detailedMetricsChart"></canvas>
-                                                </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="inspectScenePhoto" class="form-label">Scene Photo</label>
+                                                <select class="form-select" id="inspectScenePhoto" required>
+                                                    <option value="">Select a scene photo...</option>
+                                                </select>
                                             </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="inspectMaxFeatures" class="form-label">Max Features</label>
+                                                <input type="number" class="form-control" id="inspectMaxFeatures" value="800" min="100" max="2000">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="inspectGoodMatchPercent" class="form-label">Good Match Percent</label>
+                                                <input type="number" class="form-control" id="inspectGoodMatchPercent" value="0.15" step="0.01" min="0.05" max="0.5">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-primary" id="inspectButton">
+                                        <i class="fas fa-search"></i> Inspect Images
+                                    </button>
+                                    
+                                    <!-- Inspection Results -->
+                                    <div id="inspectionResults" style="display: none;" class="mt-4">
+                                        <div class="card-body text-center">
+                                            <button id="downloadVisualBtn" class="btn btn-outline-primary" style="margin-bottom: 1rem;">Download Visualization</button>
+                                            <img id="visualizationImg" style="max-width: 100%; border: 1px solid #ddd;" />
                                         </div>
                                     </div>
                                 </div>
@@ -241,6 +335,8 @@
         let currentOutputFile = null;
         let currentTruthFiles = [];
         let charts = {};
+        let currentFilmFolder = null;
+        let currentSceneFolder = null;
 
         // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
@@ -248,6 +344,22 @@
             loadTruthFiles();
             loadReferenceTables();
             setupEventListeners();
+            // Set initial state of visualizations toggle
+            document.getElementById('toggleVisualizations').checked = document.getElementById('visualizationsSection').style.display === 'block';
+
+            // Collapse icon toggle for verification results
+            const verificationCollapse = document.getElementById('verificationCollapse');
+            const verificationCollapseIcon = document.getElementById('verificationCollapseIcon');
+            if (verificationCollapse && verificationCollapseIcon) {
+                verificationCollapse.addEventListener('show.bs.collapse', function () {
+                    verificationCollapseIcon.classList.remove('fa-chevron-down');
+                    verificationCollapseIcon.classList.add('fa-chevron-up');
+                });
+                verificationCollapse.addEventListener('hide.bs.collapse', function () {
+                    verificationCollapseIcon.classList.remove('fa-chevron-up');
+                    verificationCollapseIcon.classList.add('fa-chevron-down');
+                });
+            }
         });
 
         // Load available folders
@@ -294,6 +406,17 @@
             
             // Verify button
             document.getElementById('verifyBtn').addEventListener('click', showVerificationModal);
+            
+            // Inspect button
+            document.getElementById('inspectBtn').addEventListener('click', showInspectionSection);
+            
+            // Inspect images button
+            document.getElementById('inspectButton').addEventListener('click', inspectImages);
+
+            // Visualizations toggle
+            document.getElementById('toggleVisualizations').addEventListener('change', function() {
+                document.getElementById('visualizationsSection').style.display = this.checked ? 'block' : 'none';
+            });
         }
 
         // Handle form submission
@@ -314,6 +437,15 @@
             // Clear previous verification results and charts
             clearVerificationResults();
             clearCharts();
+            
+            // Hide inspection results when starting a new match
+            const inspectionResults = document.getElementById('inspectionResults');
+            if (inspectionResults) inspectionResults.style.display = 'none';
+            const img = document.getElementById('visualizationImg');
+            if (img) img.src = '';
+            // Hide the entire inspection section when starting a new match
+            const inspectionSection = document.getElementById('inspectionSection');
+            if (inspectionSection) inspectionSection.style.display = 'none';
             
             // Show loading
             showLoading(true);
@@ -339,6 +471,10 @@
                     currentResults = data.results;
                     currentOutputFile = data.output_file.split('/').pop();
                     
+                    // Store current folders for inspection
+                    currentFilmFolder = filmFolder;
+                    currentSceneFolder = sceneFolder;
+                    
                     // Show reference table info if used
                     let resultMessage = `Found ${data.total_matches} matches`;
                     if (data.existing_matches > 0) {
@@ -348,6 +484,8 @@
                     displayResults(data.results, data.total_matches, resultMessage);
                     createVisualizations(data.results);
                     showDownloadSection();
+                    // Show the toggle switch after a successful match
+                    document.getElementById('toggleVisualizationsContainer').style.display = 'block';
                 } else {
                     showError('Matching failed: ' + data.error);
                 }
@@ -386,12 +524,13 @@
                                 <th>Scene Photo</th>
                                 <th>Confidence</th>
                                 <th>Status</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
             `;
             
-            results.forEach(result => {
+            results.forEach((result, index) => {
                 const confidenceClass = getConfidenceClass(result.confidence_score);
                 let statusBadge;
                 
@@ -404,12 +543,19 @@
                 }
                 
                 const scenePhoto = result.scene_photo || 'No match';
+                const inspectButton = result.scene_photo ? 
+                    `<button class="btn btn-sm btn-outline-info" onclick="inspectMatchedPair('${result.film_photo}', '${result.scene_photo}')">
+                        <i class="fas fa-search"></i> Inspect
+                    </button>` : 
+                    '<span class="text-muted">-</span>';
+                
                 html += `
                     <tr>
                         <td><code>${result.film_photo}</code></td>
                         <td><code>${scenePhoto}</code></td>
                         <td><span class="${confidenceClass}">${(result.confidence_score * 100).toFixed(1)}%</span></td>
                         <td>${statusBadge}</td>
+                        <td>${inspectButton}</td>
                     </tr>
                 `;
             });
@@ -427,8 +573,12 @@
         function createVisualizations(results) {
             if (results.length === 0) return;
             
-            // Show visualizations section
-            document.getElementById('visualizationsSection').style.display = 'block';
+            // Only show if toggle is ON
+            if (document.getElementById('toggleVisualizations').checked) {
+                document.getElementById('visualizationsSection').style.display = 'block';
+            } else {
+                document.getElementById('visualizationsSection').style.display = 'none';
+            }
             
             // Create match status chart
             createMatchStatusChart(results);
@@ -907,6 +1057,250 @@
             
             folderInfo.innerHTML = infoHtml || '<p class="text-muted">Select folders to see information</p>';
         }
+        
+        // Show inspection section
+        function showInspectionSection() {
+            const inspectionSection = document.getElementById('inspectionSection');
+            inspectionSection.style.display = 'block';
+            
+            // Load images for current folders
+            loadInspectionImages();
+        }
+        
+        // Replace loadInspectionImages with a Promise-based version
+        function loadInspectionImages() {
+            return new Promise(async (resolve) => {
+                const filmFolder = document.getElementById('filmFolder').value;
+                const sceneFolder = document.getElementById('sceneFolder').value;
+                if (!filmFolder || !sceneFolder) {
+                    alert('Please select both film and scene folders first');
+                    resolve();
+                    return;
+                }
+                currentFilmFolder = filmFolder;
+                currentSceneFolder = sceneFolder;
+                try {
+                    // Load film images
+                    const filmResponse = await fetch(`/api/images/film/${filmFolder}`);
+                    const filmData = await filmResponse.json();
+                    if (filmData.success) {
+                        populateImageSelect('inspectFilmPhoto', filmData.image_files);
+                    }
+                    // Load scene images
+                    const sceneResponse = await fetch(`/api/images/scene/${sceneFolder}`);
+                    const sceneData = await sceneResponse.json();
+                    if (sceneData.success) {
+                        populateImageSelect('inspectScenePhoto', sceneData.image_files);
+                    }
+                } catch (error) {
+                    console.error('Error loading images:', error);
+                    alert('Error loading images: ' + error.message);
+                }
+                resolve();
+            });
+        }
+        
+        // Populate image select dropdown
+        function populateImageSelect(selectId, images) {
+            const select = document.getElementById(selectId);
+            select.innerHTML = '<option value="">Select an image...</option>';
+            
+            images.forEach(image => {
+                const option = document.createElement('option');
+                option.value = image;
+                option.textContent = image;
+                select.appendChild(option);
+            });
+        }
+        
+        // Inspect selected images
+        async function inspectImages() {
+            const filmPhoto = document.getElementById('inspectFilmPhoto').value;
+            const scenePhoto = document.getElementById('inspectScenePhoto').value;
+            const maxFeatures = parseInt(document.getElementById('inspectMaxFeatures').value);
+            const goodMatchPercent = parseFloat(document.getElementById('inspectGoodMatchPercent').value);
+            
+            if (!filmPhoto || !scenePhoto) {
+                alert('Please select both film and scene photos');
+                return;
+            }
+            
+            if (!currentFilmFolder || !currentSceneFolder) {
+                alert('Please run a matching first to set up folders');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/inspect-images', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        film_folder: currentFilmFolder,
+                        scene_folder: currentSceneFolder,
+                        film_photo: filmPhoto,
+                        scene_photo: scenePhoto,
+                        max_features: maxFeatures,
+                        good_match_percent: goodMatchPercent
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayInspectionResults(data);
+                } else {
+                    alert('Inspection failed: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Inspection error:', error);
+                alert('Inspection failed: ' + error.message);
+            }
+        }
+        
+        // Display inspection results
+        function displayInspectionResults(data) {
+            // Show results section
+            document.getElementById('inspectionResults').style.display = 'block';
+            // Set the visualization image src
+            const filmPhoto = document.getElementById('inspectFilmPhoto').value;
+            const scenePhoto = document.getElementById('inspectScenePhoto').value;
+            const maxFeatures = document.getElementById('inspectMaxFeatures').value;
+            const goodMatchPercent = document.getElementById('inspectGoodMatchPercent').value;
+            const img = document.getElementById('visualizationImg');
+            img.src = `/api/inspect-visual?film_folder=${encodeURIComponent(currentFilmFolder)}&scene_folder=${encodeURIComponent(currentSceneFolder)}&film_photo=${encodeURIComponent(filmPhoto)}&scene_photo=${encodeURIComponent(scenePhoto)}&max_features=${maxFeatures}&good_match_percent=${goodMatchPercent}`;
+            // Optionally update keypoint counts if available in data
+            if (data.film_keypoints && document.getElementById('filmKeypointCount'))
+                document.getElementById('filmKeypointCount').textContent = data.film_keypoints.length;
+            if (data.scene_keypoints && document.getElementById('sceneKeypointCount'))
+                document.getElementById('sceneKeypointCount').textContent = data.scene_keypoints.length;
+        }
+        
+        // Load and display images with keypoints
+        async function loadAndDisplayImages(data) {
+            const filmImage = document.getElementById('filmImage');
+            const sceneImage = document.getElementById('sceneImage');
+            
+            // Set image sources
+            filmImage.src = `/film-photos/${currentFilmFolder}/${data.film_filename}`;
+            sceneImage.src = `/scene-info/${currentSceneFolder}/${data.scene_filename}`;
+            
+            // Wait for images to load, then draw keypoints
+            filmImage.onload = () => {
+                sceneImage.onload = () => {
+                    drawKeypointsAndMatches(data);
+                };
+            };
+        }
+        
+        // Draw keypoints and matches on canvases
+        function drawKeypointsAndMatches(data) {
+            const filmImg = new window.Image();
+            const sceneImg = new window.Image();
+            filmImg.src = `/film-photos/${currentFilmFolder}/${data.film_filename}`;
+            sceneImg.src = `/scene-info/${currentSceneFolder}/${data.scene_filename}`;
+
+            filmImg.onload = () => {
+                sceneImg.onload = () => {
+                    // Set up canvas
+                    const canvas = document.getElementById('mergedCanvas');
+                    const ctx = canvas.getContext('2d');
+                    const gap = 40;
+                    const scale = 400 / Math.max(filmImg.height, sceneImg.height); // scale to fit max 400px height
+                    const filmW = filmImg.width * scale;
+                    const filmH = filmImg.height * scale;
+                    const sceneW = sceneImg.width * scale;
+                    const sceneH = sceneImg.height * scale;
+                    canvas.width = filmW + gap + sceneW;
+                    canvas.height = Math.max(filmH, sceneH);
+
+                    // Draw both images
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(filmImg, 0, 0, filmW, filmH);
+                    ctx.drawImage(sceneImg, filmW + gap, 0, sceneW, sceneH);
+
+                    // Draw keypoints
+                    ctx.save();
+                    ctx.strokeStyle = '#ff0000';
+                    ctx.fillStyle = '#ff0000';
+                    data.film_keypoints.forEach(kp => {
+                        const x = kp.x * (filmW / filmImg.width);
+                        const y = kp.y * (filmH / filmImg.height);
+                        ctx.beginPath();
+                        ctx.arc(x, y, 2, 0, 2 * Math.PI);
+                        ctx.fill();
+                        ctx.stroke();
+                    });
+                    ctx.restore();
+                    ctx.save();
+                    ctx.strokeStyle = '#00ff00';
+                    ctx.fillStyle = '#00ff00';
+                    data.scene_keypoints.forEach(kp => {
+                        const x = filmW + gap + kp.x * (sceneW / sceneImg.width);
+                        const y = kp.y * (sceneH / sceneImg.height);
+                        ctx.beginPath();
+                        ctx.arc(x, y, 2, 0, 2 * Math.PI);
+                        ctx.fill();
+                        ctx.stroke();
+                    });
+                    ctx.restore();
+
+                    // Draw matches
+                    ctx.save();
+                    ctx.strokeStyle = '#ffff00';
+                    ctx.lineWidth = 1.2;
+                    data.matches.forEach(match => {
+                        const x1 = match.film_x * (filmW / filmImg.width);
+                        const y1 = match.film_y * (filmH / filmImg.height);
+                        const x2 = filmW + gap + match.scene_x * (sceneW / sceneImg.width);
+                        const y2 = match.scene_y * (sceneH / sceneImg.height);
+                        ctx.beginPath();
+                        ctx.moveTo(x1, y1);
+                        ctx.lineTo(x2, y2);
+                        ctx.stroke();
+                    });
+                    ctx.restore();
+                };
+            };
+        }
+        
+        // Inspect a matched pair from results
+        async function inspectMatchedPair(filmPhoto, scenePhoto) {
+            if (!currentFilmFolder || !currentSceneFolder) {
+                alert('Please run a matching first to set up folders');
+                return;
+            }
+            // Show inspection section
+            showInspectionSection();
+            // Wait for dropdowns to be populated
+            await loadInspectionImages();
+            // Set the selected images
+            document.getElementById('inspectFilmPhoto').value = filmPhoto;
+            document.getElementById('inspectScenePhoto').value = scenePhoto;
+            // Immediately trigger the inspection
+            await inspectImages();
+        }
+
+        // Download button handler (robust blob-based)
+        document.getElementById('downloadVisualBtn').onclick = async function() {
+            const img = document.getElementById('visualizationImg');
+            if (!img.src) return;
+            try {
+                const response = await fetch(img.src);
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'visualization.png';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            } catch (e) {
+                alert('Failed to download image.');
+            }
+        };
     </script>
     <!-- Verification Modal -->
     <div class="modal fade" id="verifyModal" tabindex="-1" aria-labelledby="verifyModalLabel" aria-hidden="true">
