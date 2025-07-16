@@ -2,6 +2,8 @@
 
 A Python application that matches film photos with scene photos using ORB (Oriented FAST and Rotated BRIEF) feature detection and matching.
 
+Beta 1: to verify the feasibility of scene matching via ORB
+
 ## Features
 
 - **Command Line Interface**: Process photos directly from the terminal
