@@ -1,4 +1,4 @@
-# Scene Sync - Photo Matching App
+# Scene Sync - Beta 1
 
 A Python application that matches film photos with scene photos using ORB (Oriented FAST and Rotated BRIEF) feature detection and matching.
 
@@ -18,7 +18,8 @@ scene-sync/
 │   ├── core/
 │   │   ├── __init__.py
 │   │   ├── matcher.py          # ORB matching logic
-│   │   └── utils.py            # Utility functions
+│   │   ├── utils.py            # Utility functions
+│   │   └── verifier.py         # For test verification
 │   ├── cli/
 │   │   ├── __init__.py
 │   │   └── commands.py         # CLI commands
@@ -30,6 +31,7 @@ scene-sync/
 ├── film-photos/                # Input folder for film photos
 ├── scene-info/                 # Input folder for scene photos
 ├── output/                     # Output folder for results
+├── truth/                      # Truth folder for true pair datasheet storage
 ├── requirements.txt
 ├── main.py                     # Main application entry point
 └── README.md
