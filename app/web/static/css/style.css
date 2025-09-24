@@ -1,0 +1,213 @@
+:root {
+    --background-color: #ffffff;
+    --background-color-pink: rgba(255, 244, 244);
+    --background-color-overlay: rgba(255, 255, 255, 0.75);
+    --background-color-dim: rgba(235, 234, 234, 0.75);
+    --border-color: rgba(239, 238, 238, 0.9);
+    --box-shadow: 0 0 1rem rgba(0, 0, 0, 0.2);
+    --accent-color: #89d0ff;
+    --button-background-color: #ededed;
+    --button-background-color-hover: #b9b9b9;
+    --button-background-accent-color: #1899f0b7;
+    --button-background-accent-color-hover: #1a9af5de;
+    --button-border: 1.5px solid rgba(0, 0, 0, 0.15);
+    --button-border-accent: 1.5px solid rgba(127, 171, 191, 0.5);
+    --button-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.25);
+    --text-primary: #000000;
+    --text-secondary: #666666;
+    --text-reverse: #ffffff;
+}
+
+body {
+    background-color: var(--background-color-pink);
+}
+
+button {
+    background-color: var(--button-background-accent-color);
+    color: var(--text-reverse);
+    border: var(--button-border-accent);
+    padding: 0.15rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 1rem;
+}
+
+button:hover {
+    background-color: var(--button-background-accent-color-hover);
+    box-shadow: var(--button-shadow);
+}
+
+.icon-word-button {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    padding-left: 0.5rem;
+    gap: 0.15rem;
+}
+
+.main-container {
+    margin: 2rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.function-box {
+    margin: 0.5rem 0;
+    background-color: var(--background-color-overlay);
+    padding: 1rem;
+    border: 1.5px solid var(--border-color);
+    border-radius: 1rem;
+    /* box-shadow: var(--box-shadow); */
+}
+
+.function-box.left-right-box {
+    display: flex;
+    flex-direction: row;
+    padding: 0;
+}
+
+.function-box-left {
+    width: 30%;
+    border-radius: calc(1rem - 1.5px) 0 0 calc(1rem - 1.5px);
+    background-color: var(--background-color-dim);
+    padding: 1rem;
+    
+}
+
+.function-box-right {
+    width: 70%;
+    background-color: transparent;
+    padding: 1rem;
+    border-radius: 0 calc(1rem - 1.5px) calc(1rem - 1.5px) 0;
+}
+
+.function-box-header {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1.5px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+.header-button-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.form-switch {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-check-label {
+    font-size: 1rem;
+}
+
+.form-check-input {
+    margin-bottom: 0.35rem;
+}
+
+
+.form-button-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-top: 1rem;
+    font-size: 1rem;
+}
+
+.accordion-button {
+    padding: 0.5rem;
+}
+
+
+
+
+
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: box-shadow 0.15s ease-in-out;
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+}
+
+.loading {
+    display: none;
+}
+
+.results-table {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.confidence-high { 
+    color: #28a745; 
+}
+
+.confidence-medium { 
+    color: #ffc107; 
+}
+
+.confidence-low { 
+    color: #dc3545; 
+}
+
+.chart-container {
+    position: relative;
+    height: 300px;
+    margin-bottom: 1rem;
+}
+
+.visualization-section {
+    margin-top: 2rem;
+}
+
+.image-comparison-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    overflow-x: auto;
+    padding: 20px 0;
+}
+
+.image-container {
+    position: relative;
+    display: inline-block;
+}
+
+.connection-area {
+    min-width: 100px;
+    height: 400px;
+    position: relative;
+}
+
+.keypoint {
+    position: absolute;
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+.keypoint.film {
+    background-color: #ff0000;
+}
+
+.keypoint.scene {
+    background-color: #00ff00;
+}
