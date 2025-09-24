@@ -668,10 +668,15 @@ async function updateFolderInfo() {
     
     if (!filmFolder && !sceneFolder) {
         folderInfo.innerHTML = '<p class="text-muted">Select folders to see information</p>';
+        folderInfo.style.display = 'block';
+        // Hide photo previews
+        document.getElementById('filmPhotosPreview').style.display = 'none';
+        document.getElementById('scenePhotosPreview').style.display = 'none';
         return;
     }
     
-    let infoHtml = '';
+    // Hide the main folder info area when any folder is selected
+    folderInfo.style.display = 'none';
     
     if (filmFolder) {
         try {
@@ -683,16 +688,20 @@ async function updateFolderInfo() {
             const data = await response.json();
             
             if (data.success) {
-                infoHtml += `
-                    <div class="folder-info">
-                        <h6>Film Folder: ${filmFolder}</h6>
-                        <p class="mb-1"><small class="text-muted">${data.total_images} images found</small></p>
-                    </div>
+                // Update film folder title with info
+                document.getElementById('filmFolderTitle').innerHTML = `
+                    Film Photos: ${filmFolder} <small class="text-muted">(${data.total_images} images)</small>
                 `;
+                // Load and display film photos
+                await loadPhotoPreview('film', filmFolder);
             }
         } catch (error) {
             console.error('Error validating film folder:', error);
         }
+    } else {
+        // Hide film photos preview if no folder selected
+        document.getElementById('filmPhotosPreview').style.display = 'none';
+        document.getElementById('filmFolderTitle').textContent = 'Film Photos Preview';
     }
     
     if (sceneFolder) {
@@ -705,19 +714,92 @@ async function updateFolderInfo() {
             const data = await response.json();
             
             if (data.success) {
-                infoHtml += `
-                    <div class="folder-info">
-                        <h6>Scene Folder: ${sceneFolder}</h6>
-                        <p class="mb-1"><small class="text-muted">${data.total_images} images found</small></p>
-                    </div>
+                // Update scene folder title with info
+                document.getElementById('sceneFolderTitle').innerHTML = `
+                    Scene Photos: ${sceneFolder} <small class="text-muted">(${data.total_images} images)</small>
                 `;
+                // Load and display scene photos
+                await loadPhotoPreview('scene', sceneFolder);
             }
         } catch (error) {
             console.error('Error validating scene folder:', error);
         }
+    } else {
+        // Hide scene photos preview if no folder selected
+        document.getElementById('scenePhotosPreview').style.display = 'none';
+        document.getElementById('sceneFolderTitle').textContent = 'Scene Photos Preview';
+    }
+}
+
+// Load photo preview for a specific folder
+async function loadPhotoPreview(folderType, folderName) {
+    try {
+        const response = await fetch(`/api/images/${folderType}/${folderName}`);
+        const data = await response.json();
+        
+        if (data.success && data.image_files.length > 0) {
+            const previewId = folderType === 'film' ? 'filmPhotosPreview' : 'scenePhotosPreview';
+            const gridId = folderType === 'film' ? 'filmPhotosGrid' : 'scenePhotosGrid';
+            
+            // Show the preview section
+            document.getElementById(previewId).style.display = 'block';
+            
+            // Create photo grid
+            const grid = document.getElementById(gridId);
+            grid.innerHTML = '';
+            
+            // Display first 50 photos as thumbnails
+            const photosToShow = data.image_files.slice(0, 50);
+            
+            photosToShow.forEach(filename => {
+                const img = document.createElement('img');
+                img.src = `/${folderType === 'film' ? 'film-photos' : 'scene-info'}/${folderName}/${filename}`;
+                img.alt = filename;
+                img.className = 'photo-thumbnail';
+                img.title = filename;
+                
+                // Add click handler to select photo for inspection
+                img.addEventListener('click', (event) => {
+                    selectPhotoForInspection(folderType, filename, event);
+                });
+                
+                grid.appendChild(img);
+            });
+            
+            // Show count if there are more photos
+            if (data.image_files.length > 50) {
+                const moreText = document.createElement('div');
+                moreText.className = 'text-muted text-center mt-2';
+                moreText.textContent = `... and ${data.image_files.length - 50} more photos`;
+                grid.parentNode.appendChild(moreText);
+            }
+        }
+    } catch (error) {
+        console.error(`Error loading ${folderType} photos:`, error);
+    }
+}
+
+// Select photo for inspection
+function selectPhotoForInspection(folderType, filename, event) {
+    if (folderType === 'film') {
+        document.getElementById('inspectFilmPhoto').value = filename;
+    } else {
+        document.getElementById('inspectScenePhoto').value = filename;
     }
     
-    folderInfo.innerHTML = infoHtml || '<p class="text-muted">Select folders to see information</p>';
+    // Show inspection section if both photos are selected
+    const filmPhoto = document.getElementById('inspectFilmPhoto').value;
+    const scenePhoto = document.getElementById('inspectScenePhoto').value;
+    
+    if (filmPhoto && scenePhoto) {
+        showInspectionSection();
+    }
+    
+    // Visual feedback - remove previous selections and highlight current
+    document.querySelectorAll('.photo-thumbnail.selected').forEach(img => {
+        img.classList.remove('selected');
+    });
+    event.target.classList.add('selected');
 }
 
 // Show inspection section

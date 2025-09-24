@@ -1,9 +1,9 @@
 :root {
     --background-color: #ffffff;
-    --background-color-pink: rgba(255, 244, 244);
+    --background-color-pink: rgb(253, 239, 239);
     --background-color-overlay: rgba(255, 255, 255, 0.75);
     --background-color-dim: rgba(235, 234, 234, 0.75);
-    --border-color: rgba(239, 238, 238, 0.9);
+    --border-color: rgba(230, 230, 230, 0.9);
     --box-shadow: 0 0 1rem rgba(0, 0, 0, 0.2);
     --accent-color: #89d0ff;
     --button-background-color: #ededed;
@@ -16,10 +16,19 @@
     --text-primary: #000000;
     --text-secondary: #666666;
     --text-reverse: #ffffff;
+    --border-color-hover: #d8e4f0;
 }
 
 body {
     background-color: var(--background-color-pink);
+}
+
+select {
+    cursor: pointer;
+}
+
+.form-select {
+    border-radius: 2rem;
 }
 
 button {
@@ -49,6 +58,40 @@ button:hover {
     margin: 2rem;
     display: flex;
     flex-direction: column;
+}
+
+/* Photo grid styles */
+.photos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 8px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+}
+
+.photo-thumbnail {
+    width: 100%;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 2px solid transparent;
+}
+
+.photo-thumbnail:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-color: var(--border-color-hover);
+}
+
+.photo-thumbnail.selected {
+    border-color: #28a745;
+    box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.3);
 }
 
 .function-box {
@@ -105,10 +148,12 @@ button:hover {
 
 .form-check-label {
     font-size: 1rem;
+    cursor: pointer;
 }
 
 .form-check-input {
     margin-bottom: 0.35rem;
+    cursor: pointer;
 }
 
 
