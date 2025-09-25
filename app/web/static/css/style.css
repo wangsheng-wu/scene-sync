@@ -1,13 +1,14 @@
 :root {
     --background-color: #ffffff;
     --background-color-pink: rgb(253, 239, 239);
-    --background-color-overlay: rgba(255, 255, 255, 0.75);
+    --background-color-overlay: rgba(255, 255, 255, 0.6);
     --background-color-dim: rgba(244, 245, 245, 0.75);
     --border-color: rgba(216, 216, 216, 0.9);
+    --border-color-light: rgba(216, 216, 216, 0.25);
     --box-shadow: 0 0 1rem rgba(0, 0, 0, 0.2);
     --accent-color: #89d0ff;
     --button-background-color-hover: rgb(243, 243, 243);
-    --button-background-color: #2e2e2e;
+    --button-background-color: #0e0e0eda;
     --button-background-accent-color: rgb(48, 111, 210);
     --button-background-accent-color-hover: rgb(36, 85, 165);
     --button-border: 1.5px solid rgba(0, 0, 0, 0.15);
@@ -22,6 +23,8 @@
 
 body {
     background-color: var(--background-color);
+    display: flex;
+    justify-content: center;
 }
 
 select {
@@ -82,10 +85,11 @@ button:hover {
 .primary-button {
     background-color: var(--button-background-color);
     color: var(--text-reverse);
-    border: var(--button-border-accent);
+    border: var(--button-border);
     padding: 0.15rem 0.75rem;
     border-radius: 1rem;
     font-size: 1rem;
+    backdrop-filter: blur(5px);
 }
 
 .primary-button:hover {
@@ -123,6 +127,9 @@ button:hover {
     margin: 2rem;
     display: flex;
     flex-direction: column;
+    min-width: 700px;
+    width: 100%;
+    max-width: 1200px;
 }
 
 /* Photo grid styles */
@@ -179,6 +186,7 @@ button:hover {
     border-radius: calc(2rem - 1.5px) 0 0 calc(2rem - 1.5px);
     background-color: var(--background-color-dim);
     padding: 1rem;
+    border-right: 1.5px solid var(--border-color-light);
     
 }
 
@@ -359,4 +367,8 @@ button:hover {
 
 .keypoint.scene {
     background-color: #00ff00;
+}
+
+code {
+    color: var(--text-primary);
 }

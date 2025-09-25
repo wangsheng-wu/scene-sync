@@ -135,36 +135,26 @@
                 Matching Overview
                 <div class="header-button-container">
                     <div class="form-check form-switch" id="toggleVisualizationsContainer">
-                        <input class="form-check-input" type="checkbox" id="toggleVisualizations" checked>
-                        <label class="form-check-label" for="toggleVisualizations">Matching Overview</label>
+                        <input class="form-check-input" type="checkbox" id="toggleVisualizations">
+                        <label class="form-check-label" for="toggleVisualizations">Show</label>
                     </div>
                 </div>
             </div>
             <div class="function-box-content" id="visualizationsSection" style="display: none;">
                 <div class="row">
                     <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-header">
-                                <h6 class="mb-0"><i class="fas fa-chart-pie"></i> Match Status Distribution</h6>
-                            </div>
                             <div class="card-body">
                                 <div class="chart-container">
                                     <canvas id="matchStatusChart"></canvas>
                                 </div>
                             </div>
-                        </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-header">
-                                <h6 class="mb-0"><i class="fas fa-chart-bar"></i> Confidence Score Distribution</h6>
-                            </div>
                             <div class="card-body">
                                 <div class="chart-container">
                                     <canvas id="confidenceChart"></canvas>
                                 </div>
                             </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -172,7 +162,7 @@
 
         <div class="function-box">
             <div class="function-box-header">
-                Results
+                Verification
             </div>
             <div class="function-box-content" id="verificationContent" style="display: none;">
                 <!-- Verification Results -->
@@ -222,7 +212,7 @@
                         <input type="number" class="form-control" id="inspectGoodMatchPercent" value="0.15" step="0.01" min="0.05" max="0.5">
                     </div>
                     <div class="form-button-container">
-                        <button type="button" id="inspectButton" style="width: 100%;">
+                        <button type="button" class="primary-button" id="inspectButton" style="width: 100%;">
                             Inspect Images
                         </button>
                     </div>
@@ -230,12 +220,12 @@
             </div>
             <div class="function-box-right">
                 <div class="function-box-header" style="justify-content: flex-end; border: none;">
-                    <button id="downloadVisualBtn">Download Visualization</button>
+                    <button id="downloadVisualBtn" class="secondary-button">Download Visualization</button>
                 </div>
                 <div class="function-box-content">
-                    <div id="inspectionResults" style="display: none;">
+                    <div id="inspectionResults" style="display: none; justify-content: center;">
                         <div class="image-container">
-                            <img id="visualizationImg" style="max-width: 100%; border: 1px solid #ddd;" />
+                            <img id="visualizationImg" style="max-width: 100%;" />
                         </div>
                     </div>
                 </div>

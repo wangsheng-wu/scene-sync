@@ -12,8 +12,8 @@ document.addEventListener('DOMContentLoaded', function() {
     loadTruthFiles();
     loadReferenceTables();
     setupEventListeners();
-    // Set initial state of visualizations toggle
-    document.getElementById('toggleVisualizations').checked = document.getElementById('visualizationsSection').style.display === 'block';
+    // Set initial state of visualizations toggle (default to unchecked)
+    document.getElementById('toggleVisualizations').checked = false;
 
 });
 
@@ -139,7 +139,7 @@ async function handleMatchSubmit(event) {
             displayResults(data.results, data.total_matches, resultMessage);
             createVisualizations(data.results);
             // Show the toggle switch after a successful match
-            document.getElementById('toggleVisualizationsContainer').style.display = 'block';
+            document.getElementById('toggleVisualizationsContainer').style.display = 'flex';
         } else {
             showError('Matching failed: ' + data.error);
         }
@@ -893,7 +893,7 @@ async function inspectImages() {
 // Display inspection results
 function displayInspectionResults(data) {
     // Show results section
-    document.getElementById('inspectionResults').style.display = 'block';
+    document.getElementById('inspectionResults').style.display = 'flex';
     // Set the visualization image src
     const filmPhoto = document.getElementById('inspectFilmPhoto').value;
     const scenePhoto = document.getElementById('inspectScenePhoto').value;
