@@ -71,7 +71,7 @@
 
                         <!-- Submit Button -->
                         <div class="form-button-container">
-                            <button type="submit" id="matchButton">
+                            <button type="submit" id="matchButton" class="primary-button" style="width: 100%;">
                                 Start Matching
                             </button>
                         </div>
@@ -104,13 +104,13 @@
             <div class="function-box-header">
                 Results
                 <div class="header-button-container">
-                    <button id="downloadBtn">
+                    <button id="downloadBtn" class="secondary-button">
                         Download CSV
                     </button>
-                    <button id="verifyBtn">
+                    <button id="verifyBtn" class="secondary-button">
                         Verify Results
                     </button>
-                    <button id="inspectBtn">
+                    <button id="inspectBtn" class="secondary-button">
                         Inspect Images
                     </button>
                 </div>
@@ -173,29 +173,20 @@
         <div class="function-box">
             <div class="function-box-header">
                 Results
-                <div class="header-button-container">
-                    <button class="btn btn-link btn-sm float-end" type="button" data-bs-toggle="collapse" data-bs-target="#verificationCollapse" aria-expanded="true" aria-controls="verificationCollapse">
-                        <span id="verificationCollapseIcon" class="fas fa-chevron-up"></span>
-                    </button>
-                </div>
             </div>
-            <div class="function-box-content" id="verificationContent" class="display: none;">
+            <div class="function-box-content" id="verificationContent" style="display: none;">
                 <!-- Verification Results -->
-                <div id="verificationCollapse" class="collapse show">
-                    <div class="card-body">
-                        <div id="verificationMetrics"></div>
-                        <div id="verificationCharts" class="mt-3">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="chart-container">
-                                        <canvas id="metricsChart"></canvas>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="chart-container">
-                                        <canvas id="detailedMetricsChart"></canvas>
-                                    </div>
-                                </div>
+                <div id="verificationMetrics"></div>
+                <div id="verificationCharts" class="mt-3">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="chart-container">
+                                <canvas id="metricsChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="chart-container">
+                                <canvas id="detailedMetricsChart"></canvas>
                             </div>
                         </div>
                     </div>
@@ -204,52 +195,46 @@
             </div>
         </div>
 
-        <div class="function-box">
-            <div class="function-box-header">
-                Image Inspection
+        <div class="function-box left-right-box" id="inspectionSection" style="display: none;">
+            <div class="function-box-left">
+                <div class="function-box-header">
+                    Image Inspection
+                </div>
+                <div class="function-box-content" style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div class="input-container">
+                        <label for="inspectFilmPhoto" class="form-label">Film Photo</label>
+                        <select class="form-select" id="inspectFilmPhoto" required>
+                            <option value="">Select a film photo...</option>
+                        </select>
+                    </div>
+                    <div class="input-container">
+                        <label for="inspectScenePhoto" class="form-label">Scene Photo</label>
+                        <select class="form-select" id="inspectScenePhoto" required>
+                            <option value="">Select a scene photo...</option>
+                        </select>
+                    </div>
+                    <div class="input-container">
+                        <label for="inspectMaxFeatures" class="form-label">Max Features</label>
+                        <input type="number" class="form-control" id="inspectMaxFeatures" value="800" min="100" max="2000">
+                    </div>
+                    <div class="input-container">
+                        <label for="inspectGoodMatchPercent" class="form-label">Good Match Percent</label>
+                        <input type="number" class="form-control" id="inspectGoodMatchPercent" value="0.15" step="0.01" min="0.05" max="0.5">
+                    </div>
+                    <div class="form-button-container">
+                        <button type="button" id="inspectButton" style="width: 100%;">
+                            Inspect Images
+                        </button>
+                    </div>
+                </div>
             </div>
-            <div class="function-box-content" id="inspectionSection" style="display: none;">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="inspectFilmPhoto" class="form-label">Film Photo</label>
-                                <select class="form-select" id="inspectFilmPhoto" required>
-                                    <option value="">Select a film photo...</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="inspectScenePhoto" class="form-label">Scene Photo</label>
-                                <select class="form-select" id="inspectScenePhoto" required>
-                                    <option value="">Select a scene photo...</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="inspectMaxFeatures" class="form-label">Max Features</label>
-                                <input type="number" class="form-control" id="inspectMaxFeatures" value="800" min="100" max="2000">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="inspectGoodMatchPercent" class="form-label">Good Match Percent</label>
-                                <input type="number" class="form-control" id="inspectGoodMatchPercent" value="0.15" step="0.01" min="0.05" max="0.5">
-                            </div>
-                        </div>
-                    </div>
-                    <button type="button" id="inspectButton">
-                        Inspect Images
-                    </button>
-                    
-                    <!-- Inspection Results -->
-                    <div id="inspectionResults" style="display: none;" class="mt-4">
-                        <div class="card-body text-center">
-                            <button id="downloadVisualBtn" class="btn btn-outline-primary" style="margin-bottom: 1rem;">Download Visualization</button>
+            <div class="function-box-right">
+                <div class="function-box-header" style="justify-content: flex-end; border: none;">
+                    <button id="downloadVisualBtn">Download Visualization</button>
+                </div>
+                <div class="function-box-content">
+                    <div id="inspectionResults" style="display: none;">
+                        <div class="image-container">
                             <img id="visualizationImg" style="max-width: 100%; border: 1px solid #ddd;" />
                         </div>
                     </div>
@@ -261,12 +246,14 @@
     </div>
     
     <!-- Verification Modal -->
-    <div class="modal fade" id="verifyModal" tabindex="-1" aria-labelledby="verifyModalLabel" aria-hidden="true">
+    <div class="modal" id="verifyModal" tabindex="-1" aria-labelledby="verifyModalLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="verifyModalLabel"><i class="fas fa-check-circle"></i> Verify Results</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-title" id="verifyModalLabel">Verify Results</div>
+            <button type="button" class="icon-button" data-bs-dismiss="modal" aria-label="Close">
+                <i class="fas fa-times"></i>
+            </button>
           </div>
           <div class="modal-body">
             <div class="mb-3">
@@ -275,8 +262,8 @@
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button type="button" class="btn btn-success" id="confirmVerifyBtn">Verify</button>
+            <button type="button" class="secondary-button" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="primary-button" id="confirmVerifyBtn">Verify</button>
           </div>
         </div>
       </div>

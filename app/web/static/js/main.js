@@ -15,19 +15,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set initial state of visualizations toggle
     document.getElementById('toggleVisualizations').checked = document.getElementById('visualizationsSection').style.display === 'block';
 
-    // Collapse icon toggle for verification results
-    const verificationCollapse = document.getElementById('verificationCollapse');
-    const verificationCollapseIcon = document.getElementById('verificationCollapseIcon');
-    if (verificationCollapse && verificationCollapseIcon) {
-        verificationCollapse.addEventListener('show.bs.collapse', function () {
-            verificationCollapseIcon.classList.remove('fa-chevron-down');
-            verificationCollapseIcon.classList.add('fa-chevron-up');
-        });
-        verificationCollapse.addEventListener('hide.bs.collapse', function () {
-            verificationCollapseIcon.classList.remove('fa-chevron-up');
-            verificationCollapseIcon.classList.add('fa-chevron-down');
-        });
-    }
 });
 
 // Load available folders
@@ -211,8 +198,8 @@ function displayResults(results, totalMatches, resultMessage = null) {
         
         const scenePhoto = result.scene_photo || 'No match';
         const inspectButton = result.scene_photo ? 
-            `<button class="btn btn-sm btn-outline-info" onclick="inspectMatchedPair('${result.film_photo}', '${result.scene_photo}')">
-                <i class="fas fa-search"></i> Inspect
+            `<button class="datasheet-button" onclick="inspectMatchedPair('${result.film_photo}', '${result.scene_photo}')">
+                Inspect
             </button>` : 
             '<span class="text-muted">-</span>';
         
@@ -805,7 +792,7 @@ function selectPhotoForInspection(folderType, filename, event) {
 // Show inspection section
 function showInspectionSection() {
     const inspectionSection = document.getElementById('inspectionSection');
-    inspectionSection.style.display = 'block';
+    inspectionSection.style.display = 'flex';
     
     // Load images for current folders
     loadInspectionImages();
