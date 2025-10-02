@@ -1,0 +1,102 @@
+/* Custom Select Dropdown Styles - Replace System Default */
+.custom-dropdown {
+    position: relative;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+.custom-dropdown .dropdown-selected {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.15rem 0.75rem;
+    border: 1.5px solid var(--border-color);
+    border-radius: 2rem;
+    background-color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--text-primary);
+}
+
+.custom-dropdown .dropdown-selected:hover {
+    border-color: var(--border-color-hover);
+}
+
+.custom-dropdown .dropdown-selected.active {
+    border-color: var(--border-color-hover);
+}
+
+.custom-dropdown .dropdown-arrow {
+    transition: transform 0.3s ease;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
+.custom-dropdown .dropdown-selected.active .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+.custom-dropdown .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: var(--background-color-overlay);
+    backdrop-filter: blur(5px);
+    border: 1.5px solid var(--border-color);
+    border-top: none;
+    padding: 0.5rem;
+    border-radius: 1rem;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+    box-shadow: var(--box-shadow);
+}
+
+.custom-dropdown .dropdown-item {
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1rem;
+    padding: 0 0.5rem;
+    border-radius: 0.5rem;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color-light);
+}
+
+.custom-dropdown .dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.custom-dropdown .dropdown-item:hover {
+    background-color: var(--button-background-color-hover);
+    color: var(--text-primary);
+}
+
+.custom-dropdown .dropdown-item.selected {
+    background-color: var(--button-background-color);
+    color: white;
+}
+
+.custom-dropdown .dropdown-item.disabled {
+    color: var(--text-secondary);
+    cursor: not-allowed;
+    background-color: #f8f9fa;
+}
+
+.custom-dropdown .dropdown-item.disabled:hover {
+    background-color: #f8f9fa;
+    color: var(--text-secondary);
+}
+
+/* Hide original select */
+.custom-dropdown select {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 100%;
+    height: 100%;
+}

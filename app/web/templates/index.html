@@ -8,6 +8,12 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- <link href="{{ url_for('static', filename='css/custom-select.css') }}" rel="stylesheet">
+    <script src="{{ url_for('static', filename='js/custom-select.js') }}"></script> -->
+    <script>
+        // Set to false to disable custom selects, true to enable
+        window.ENABLE_CUSTOM_SELECT = false;
+    </script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </head>
 <body>
@@ -136,7 +142,7 @@
                 <div class="header-button-container">
                     <div class="form-check form-switch" id="toggleVisualizationsContainer">
                         <input class="form-check-input" type="checkbox" id="toggleVisualizations">
-                        <label class="form-check-label" for="toggleVisualizations">Show</label>
+                        <!-- <label class="form-check-label" for="toggleVisualizations">Show</label> -->
                     </div>
                 </div>
             </div>

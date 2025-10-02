@@ -45,6 +45,11 @@ function populateFolderSelect(selectId, folders) {
         option.textContent = folder;
         select.appendChild(option);
     });
+    
+    // Update custom dropdown
+    if (window.CustomSelect) {
+        window.CustomSelect.update(select);
+    }
 }
 
 // Setup event listeners
@@ -427,6 +432,9 @@ async function loadReferenceTables() {
                 option.textContent = table;
                 select.appendChild(option);
             });
+            
+            // Update custom dropdown
+            updateCustomDropdown(select);
         }
     } catch (error) {
         console.error('Error loading reference tables:', error);
@@ -451,6 +459,11 @@ function showVerificationModal() {
         option.textContent = file;
         select.appendChild(option);
     });
+    
+    // Update custom dropdown
+    if (window.CustomSelect) {
+        window.CustomSelect.update(select);
+    }
     // Show modal
     const verifyModal = new bootstrap.Modal(document.getElementById('verifyModal'));
     verifyModal.show();
@@ -842,6 +855,11 @@ function populateImageSelect(selectId, images) {
         option.textContent = image;
         select.appendChild(option);
     });
+    
+    // Update custom dropdown
+    if (window.CustomSelect) {
+        window.CustomSelect.update(select);
+    }
 }
 
 // Inspect selected images
@@ -947,5 +965,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('Failed to download image.');
             }
         };
+    }
+
+    // Initialize custom dropdowns when DOM is loaded (if enabled)
+    if (window.CustomSelect && window.ENABLE_CUSTOM_SELECT !== false) {
+        window.CustomSelect.initialize();
     }
 });

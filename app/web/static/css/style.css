@@ -7,8 +7,9 @@
     --border-color-light: rgba(216, 216, 216, 0.25);
     --box-shadow: 0 0 1rem rgba(0, 0, 0, 0.2);
     --accent-color: #89d0ff;
-    --button-background-color-hover: rgb(243, 243, 243);
+    --button-background-color-hover: rgb(213, 213, 213);
     --button-background-color: #0e0e0eda;
+    --button-background-color-light: rgb(243, 243, 243);
     --button-background-accent-color: rgb(48, 111, 210);
     --button-background-accent-color-hover: rgb(36, 85, 165);
     --button-border: 1.5px solid rgba(0, 0, 0, 0.15);
@@ -30,6 +31,7 @@ body {
 select {
     cursor: pointer;
 }
+
 
 .input-container {
     margin-bottom: 0rem;
@@ -68,7 +70,7 @@ button:hover {
 }
 
 .secondary-button {
-    background-color: var(--button-background-color-hover);
+    background-color: var(--button-background-color-light);
     color: var(--text-primary);
     border: var(--secondary-button-border);
     padding: 0.15rem 0.75rem;
